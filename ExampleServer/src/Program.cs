@@ -3,30 +3,81 @@ using SecureTransport;
 
 namespace ExampleServer;
 
+class ProgramConfig
+{
+    public static string Passphrase { get; set; } = "generic";
+    public static string Address { get; set; } = "127.0.0.1";
+    public static int Port { get; set; } = 8085;
+}
+
+class ServerWrapper
+{
+    public bool LoopRunning;
+
+    public Dictionary<int, SecureConnection> Connections = new();
+
+    private readonly SecureTransportServer _server;
+
+    public ServerWrapper()
+    {
+        _server = new SecureTransportServer(ProgramConfig.Passphrase, ProgramConfig.Port);
+        _server.Open();
+    }
+
+    public void Loop()
+    {
+        LoopRunning = true;
+        int iConnection = 0;
+
+        Thread t = new Thread(() =>
+        {
+            while (LoopRunning)
+            {
+                // accept a new client
+                SecureConnection c = _server.AcceptClient();
+                Connections.Add(iConnection, c);
+                iConnection++;
+
+                c.AuthSelf();
+                var connection = iConnection;
+                Thread cT = new Thread(() => { HandleConnection(c, connection); });
+                cT.Start();
+            }
+        });
+        t.Start();
+    }
+
+    public void HandleConnection(SecureConnection c, int i)
+    {
+        while (LoopRunning)
+        {
+            // Receive a message
+            byte[] rMessage = c.ReceiveEncryptedPacket();
+            string rStr = Encoding.UTF8.GetString(rMessage);
+            Console.WriteLine($"connection {i} says: {rStr}");
+
+            // Echo the message
+            c.SendEncryptedPacket(rMessage);
+        }
+    }
+}
+
 class Program
 {
     static void Main(string[] args)
     {
-        string passphrase = "generic";
         if (args.Length >= 1)
         {
-            passphrase = args[0];
+            ProgramConfig.Passphrase = args[0];
         }
 
-        SecureTransportServer server = new SecureTransportServer(passphrase, 8085);
-        server.Open();
+        ServerWrapper server = new ServerWrapper();
 
-        SecureConnection client = server.AcceptClient();
-        client.AuthSelf();
-        
-        Console.WriteLine("Client is authed?: {0}", client.IsAuthed);
+        server.Loop();
 
-        if (client.IsAuthed)
+        while (server.LoopRunning)
         {
-            client.SendEncryptedPacket(Encoding.UTF8.GetBytes("Hello, World!"));
+            Thread.Sleep(100);
         }
-
-        Console.WriteLine("Press any key to exit...");
-        Console.ReadKey();
     }
 }
