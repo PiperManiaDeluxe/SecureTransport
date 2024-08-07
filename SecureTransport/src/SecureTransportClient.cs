@@ -41,8 +41,8 @@ public class SecureTransportClient
     /// <param name="port">The port number to connect to. Defaults to 8008.</param>
     public SecureTransportClient(string serverAddress, string passphrase, int port = 8008)
     {
-        ServerAddress = serverAddress;
-        _passphrase = passphrase;
+        ServerAddress = serverAddress ?? throw new ArgumentNullException(nameof(serverAddress));
+        _passphrase = passphrase ?? throw new ArgumentNullException(nameof(passphrase));
         Port = port;
     }
 

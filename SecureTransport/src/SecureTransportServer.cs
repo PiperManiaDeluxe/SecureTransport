@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 
 namespace SecureTransport;
@@ -28,7 +27,7 @@ public class SecureTransportServer
     /// <param name="port">The port number on which to listen. Defaults to 8008.</param>
     public SecureTransportServer(string passphrase, int port = 8008)
     {
-        Passphrase = passphrase;
+        Passphrase = passphrase ?? throw new ArgumentNullException(nameof(passphrase));
         Port = port;
     }
 
