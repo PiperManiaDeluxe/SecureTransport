@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureTransport", "SecureTransport\SecureTransport.csproj", "{5A4B9F39-2632-4824-8FB4-3C49E432A9D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleServer", "ExampleServer\ExampleServer.csproj", "{191FBF2E-815D-4F0C-9ED8-ED9E24EB9331}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleClient", "ExampleClient\ExampleClient.csproj", "{71DD3550-FE1E-4AFC-9714-BE3F88970E31}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5A4B9F39-2632-4824-8FB4-3C49E432A9D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A4B9F39-2632-4824-8FB4-3C49E432A9D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A4B9F39-2632-4824-8FB4-3C49E432A9D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A4B9F39-2632-4824-8FB4-3C49E432A9D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{191FBF2E-815D-4F0C-9ED8-ED9E24EB9331}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{191FBF2E-815D-4F0C-9ED8-ED9E24EB9331}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{191FBF2E-815D-4F0C-9ED8-ED9E24EB9331}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{191FBF2E-815D-4F0C-9ED8-ED9E24EB9331}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71DD3550-FE1E-4AFC-9714-BE3F88970E31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71DD3550-FE1E-4AFC-9714-BE3F88970E31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71DD3550-FE1E-4AFC-9714-BE3F88970E31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71DD3550-FE1E-4AFC-9714-BE3F88970E31}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
