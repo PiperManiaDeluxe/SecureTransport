@@ -31,20 +31,21 @@ internal static class CryptoHelper
     /// <returns>The encrypted data, including the IV.</returns>
     public static byte[] Encrypt(byte[] data, byte[] key)
     {
-        using var aes = Aes.Create();
-        aes.Key = key;
-        aes.GenerateIV();
+        using var aes = Aes.Create(); // Create a new AES instance
+        aes.Key = key; // Set the encryption key
+        aes.GenerateIV(); // Generate a new IV
 
-        using var ms = new MemoryStream();
-        ms.Write(aes.IV, 0, aes.IV.Length);
+        using var ms = new MemoryStream(); // Memory stream to hold encrypted data
+        ms.Write(aes.IV, 0, aes.IV.Length); // Write the IV to the stream
 
+        // Create a CryptoStream for encryption
         using (var cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
         {
-            cs.Write(data, 0, data.Length);
-            cs.FlushFinalBlock();
+            cs.Write(data, 0, data.Length); // Write the data to encrypt
+            cs.FlushFinalBlock(); // Ensure all data is flushed to the stream
         }
 
-        return ms.ToArray();
+        return ms.ToArray(); // Return the encrypted data including the IV
     }
 
     /// <summary>
@@ -55,21 +56,25 @@ internal static class CryptoHelper
     /// <returns>The decrypted data.</returns>
     public static byte[] Decrypt(byte[] encryptedData, byte[] key)
     {
-        using var aes = Aes.Create();
-        aes.Key = key;
+        using var aes = Aes.Create(); // Create a new AES instance
+        aes.Key = key; // Set the decryption key
 
+        // Extract the IV from the encrypted data
         byte[] iv = new byte[IvSizeBytes];
         Array.Copy(encryptedData, 0, iv, 0, iv.Length);
-        aes.IV = iv;
+        aes.IV = iv; // Set the IV for decryption
 
-        using var ms = new MemoryStream();
+        using var ms = new MemoryStream(); // Memory stream to hold decrypted data
+
+        // Create a CryptoStream for decryption
         using (var cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
         {
-            cs.Write(encryptedData, iv.Length, encryptedData.Length - iv.Length);
-            cs.FlushFinalBlock();
+            cs.Write(encryptedData, iv.Length,
+                encryptedData.Length - iv.Length); // Write the encrypted data (excluding IV)
+            cs.FlushFinalBlock(); // Ensure all data is flushed to the stream
         }
 
-        return ms.ToArray();
+        return ms.ToArray(); // Return the decrypted data
     }
 
     /// <summary>
@@ -80,8 +85,9 @@ internal static class CryptoHelper
     /// <returns>The derived key.</returns>
     public static byte[] DeriveKey(string passphrase, byte[] salt)
     {
+        // Use PBKDF2 to derive a key from the passphrase and salt
         using var pbkdf2 = new Rfc2898DeriveBytes(passphrase, salt, EncryptionIterations, HashAlgorithmName.SHA512);
-        return pbkdf2.GetBytes(KeySizeBytes);
+        return pbkdf2.GetBytes(KeySizeBytes); // Return the derived key
     }
 
     /// <summary>
@@ -92,7 +98,8 @@ internal static class CryptoHelper
     /// <returns>The computed HMAC.</returns>
     public static byte[] ComputeHmac(byte[] data, string key)
     {
+        // Create HMACSHA512 instance with the provided key
         using var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(key));
-        return hmac.ComputeHash(data);
+        return hmac.ComputeHash(data); // Return the computed HMAC
     }
 }

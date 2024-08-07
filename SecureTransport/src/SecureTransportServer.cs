@@ -18,7 +18,7 @@ public class SecureTransportServer
     /// </summary>
     internal string Passphrase { get; }
 
-    private TcpListener? _listener;
+    private TcpListener? _listener; // TCP listener for handling incoming connections
 
     /// <summary>
     /// Initializes a new instance of the SecureTransportServer class.
@@ -27,8 +27,9 @@ public class SecureTransportServer
     /// <param name="port">The port number on which to listen. Defaults to 8008.</param>
     public SecureTransportServer(string passphrase, int port = 8008)
     {
+        // Ensure the passphrase is not null
         Passphrase = passphrase ?? throw new ArgumentNullException(nameof(passphrase));
-        Port = port;
+        Port = port; // Set the port number
     }
 
     /// <summary>
@@ -36,8 +37,9 @@ public class SecureTransportServer
     /// </summary>
     public void Open()
     {
+        // Initialize the TCP listener to accept connections on the specified port
         _listener = new TcpListener(IPAddress.Any, Port);
-        _listener.Start();
+        _listener.Start(); // Start listening for incoming connections
     }
 
     /// <summary>
@@ -47,9 +49,11 @@ public class SecureTransportServer
     /// <exception cref="InvalidOperationException">Thrown if the server has not been started.</exception>
     public SecureConnection AcceptClient()
     {
+        // Check if the listener has been initialized
         if (_listener == null)
             throw new InvalidOperationException("TCP listener is null, server has not yet started.");
 
+        // Accept the incoming client connection and return a SecureConnection object
         return new SecureConnection(_listener.AcceptTcpClient(), this);
     }
 
@@ -59,11 +63,13 @@ public class SecureTransportServer
     /// <exception cref="InvalidOperationException">Thrown if the server has not been started.</exception>
     public void Close()
     {
+        // Check if the listener has been initialized
         if (_listener == null)
             throw new InvalidOperationException("TCP listener is null, server has not yet started.");
-        
+
+        // Stop and dispose of the listener
         _listener.Stop();
         _listener.Dispose();
-        _listener = null;
+        _listener = null; // Set listener to null to indicate that it is closed
     }
 }
