@@ -4,6 +4,21 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+
+        <PackageId>PiperManiaDeluxe.SecureTransport</PackageId>
+        <Version>1.0.1</Version>
+        <Authors>PiperManiaDeluxe</Authors>
+        <Company>PiperManiaDeluxe</Company>
+        <Description>
+            Simple C# classes to help with secure TCP comunication
+        </Description>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
+        <None Include="..\LICENSE" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
 </Project>
