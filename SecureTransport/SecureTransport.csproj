@@ -6,7 +6,6 @@
         <Nullable>enable</Nullable>
 
         <PackageId>PiperManiaDeluxe.SecureTransport</PackageId>
-        <Version>1.0.1</Version>
         <Authors>PiperManiaDeluxe</Authors>
         <Company>PiperManiaDeluxe</Company>
         <Description>
@@ -14,6 +13,7 @@
         </Description>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        
         <Version>1.1.0</Version>
     </PropertyGroup>
 
