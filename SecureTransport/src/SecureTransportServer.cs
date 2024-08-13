@@ -18,7 +18,8 @@ public class SecureTransportServer
     /// </summary>
     internal string Passphrase { get; }
 
-    private TcpListener? _listener; // TCP listener for handling incoming connections
+    private TcpListener? _listener; // TCP listener for handling incoming connections (kept for compatability)
+    internal TcpListener? Listener; // TCP listener for handling incoming connections (internal)
 
     /// <summary>
     /// Initializes a new instance of the SecureTransportServer class.
@@ -39,6 +40,7 @@ public class SecureTransportServer
     {
         // Initialize the TCP listener to accept connections on the specified port
         _listener = new TcpListener(IPAddress.Any, Port);
+        Listener = _listener;
         _listener.Start(); // Start listening for incoming connections
     }
 
@@ -47,6 +49,7 @@ public class SecureTransportServer
     /// </summary>
     /// <returns>A SecureConnection object representing the accepted client connection.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the server has not been started.</exception>
+    [Obsolete("Instead create a new SecureConnection(this); Then use SecureConnection.Open();")]
     public SecureConnection AcceptClient()
     {
         // Check if the listener has been initialized

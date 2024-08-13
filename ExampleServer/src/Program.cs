@@ -14,7 +14,7 @@ class ServerWrapper
 {
     public bool LoopRunning;
 
-    public Dictionary<int, SecureConnection> Connections = new();
+    public Dictionary<int, SecureConnection> Connections = new Dictionary<int, SecureConnection>();
 
     private readonly SecureTransportServer _server;
 
@@ -34,12 +34,12 @@ class ServerWrapper
             while (LoopRunning)
             {
                 // accept a new client
-                SecureConnection c = _server.AcceptClient();
+                SecureConnection c = new SecureConnection(_server);
+                c.Open();
                 Connections.Add(iConnection, c);
                 iConnection++;
 
-                c.AuthSelf();
-                var connection = iConnection;
+                int connection = iConnection;
                 Thread cT = new Thread(() => { HandleConnection(c, connection); });
                 cT.Start();
             }
