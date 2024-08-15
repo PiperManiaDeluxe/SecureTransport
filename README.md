@@ -1,2 +1,4 @@
 # SecureTransport
- Simple C# classes to help with secure TCP comunication
+
+Simple C# classes to help with secure TCP comunication \
+*POSSIBLY INSECURE*
