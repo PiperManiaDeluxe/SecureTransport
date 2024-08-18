@@ -28,8 +28,12 @@ public class SecureTransportServer
     /// <param name="port">The port number on which to listen. Defaults to 8008.</param>
     public SecureTransportServer(string passphrase, int port = 8008)
     {
-        // Ensure the passphrase is not null
+        // Validate inputs
         Passphrase = passphrase ?? throw new ArgumentNullException(nameof(passphrase));
+
+        if (port < 1 || port > 65535)
+            throw new ArgumentOutOfRangeException(nameof(port));
+
         Port = port; // Set the port number
     }
 

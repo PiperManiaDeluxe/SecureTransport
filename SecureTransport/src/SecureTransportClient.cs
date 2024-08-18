@@ -44,6 +44,10 @@ public class SecureTransportClient : ISecureTransportConnection, IAsyncSecureTra
         // Validate inputs
         ServerAddress = serverAddress ?? throw new ArgumentNullException(nameof(serverAddress));
         _passphrase = passphrase ?? throw new ArgumentNullException(nameof(passphrase));
+
+        if (port < 1 || port > 65535)
+            throw new ArgumentOutOfRangeException(nameof(port));
+
         Port = port; // Set the port number
     }
 
@@ -52,6 +56,9 @@ public class SecureTransportClient : ISecureTransportConnection, IAsyncSecureTra
     /// </summary>
     public void Open()
     {
+        if (Stream != null)
+            throw new InvalidOperationException("Already connected.");
+
         // Establish TCP connection to the server
         _client = new TcpClient(ServerAddress, Port);
         Stream = _client.GetStream();
@@ -78,13 +85,9 @@ public class SecureTransportClient : ISecureTransportConnection, IAsyncSecureTra
 
         // Check if the authentication was successful
         if (Encoding.UTF8.GetString(decryptedWelcome) == "You are authed!")
-        {
             IsAuthed = true; // Set authentication status to true
-        }
         else
-        {
             throw new InvalidOperationException("Authentication failed.");
-        }
     }
 
     /// <summary>
@@ -92,6 +95,9 @@ public class SecureTransportClient : ISecureTransportConnection, IAsyncSecureTra
     /// </summary>
     public async Task OpenAsync()
     {
+        if (Stream != null)
+            throw new InvalidOperationException("Already connected.");
+
         // Establish TCP connection to the server
         _client = new TcpClient();
         await _client.ConnectAsync(ServerAddress, Port);
@@ -119,13 +125,9 @@ public class SecureTransportClient : ISecureTransportConnection, IAsyncSecureTra
 
         // Check if the authentication was successful
         if (Encoding.UTF8.GetString(decryptedWelcome) == "You are authed!")
-        {
             IsAuthed = true; // Set authentication status to true
-        }
         else
-        {
             throw new InvalidOperationException("Authentication failed.");
-        }
     }
 
     /// <summary>
@@ -194,12 +196,21 @@ public class SecureTransportClient : ISecureTransportConnection, IAsyncSecureTra
     /// </summary>
     /// <param name="stream">The network stream to send the packet on.</param>
     /// <param name="data">The packet data to send.</param>
-    internal void SendPacket(NetworkStream stream, byte[] data)
+    internal bool SendPacket(NetworkStream stream, byte[] data)
     {
-        // Create a length prefix for the packet data
-        byte[] lengthPrefix = BitConverter.GetBytes(data.Length);
-        stream.Write(lengthPrefix, 0, sizeof(int)); // Send the length prefix
-        stream.Write(data, 0, data.Length); // Send the actual data
+        try
+        {
+            // Create a length prefix for the packet data
+            byte[] lengthPrefix = BitConverter.GetBytes(data.Length);
+            stream.Write(lengthPrefix, 0, sizeof(int)); // Send the length prefix
+            stream.Write(data, 0, data.Length); // Send the actual data
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"SecureTransport: Error sending packet: {e.Message}");
+            return false;
+        }
     }
 
     /// <summary>
@@ -207,12 +218,21 @@ public class SecureTransportClient : ISecureTransportConnection, IAsyncSecureTra
     /// </summary>
     /// <param name="stream">The network stream to send the packet on.</param>
     /// <param name="data">The packet data to send.</param>
-    internal async Task SendPacketAsync(NetworkStream stream, byte[] data)
+    internal async Task<bool> SendPacketAsync(NetworkStream stream, byte[] data)
     {
-        // Create a length prefix for the packet data
-        byte[] lengthPrefix = BitConverter.GetBytes(data.Length);
-        await stream.WriteAsync(lengthPrefix, 0, sizeof(int));
-        await stream.WriteAsync(data, 0, data.Length);
+        try
+        {
+            // Create a length prefix for the packet data
+            byte[] lengthPrefix = BitConverter.GetBytes(data.Length);
+            await stream.WriteAsync(lengthPrefix, 0, sizeof(int));
+            await stream.WriteAsync(data, 0, data.Length);
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"SecureTransport: Error sending packet: {e.Message}");
+            return false;
+        }
     }
 
     /// <summary>
@@ -222,24 +242,32 @@ public class SecureTransportClient : ISecureTransportConnection, IAsyncSecureTra
     /// <returns>The received packet data, or null if the receive operation failed.</returns>
     internal byte[]? ReceivePacket(NetworkStream stream)
     {
-        // Read the length prefix to determine the size of the incoming packet
-        byte[] lengthPrefix = new byte[sizeof(int)];
-        int bytesRead = stream.Read(lengthPrefix, 0, sizeof(int));
+        try
+        {
+            // Read the length prefix to determine the size of the incoming packet
+            byte[] lengthPrefix = new byte[sizeof(int)];
+            int bytesRead = stream.Read(lengthPrefix, 0, sizeof(int));
 
-        // If the length prefix is not fully read, return null
-        if (bytesRead < sizeof(int)) return null;
+            // If the length prefix is not fully read, return null
+            if (bytesRead < sizeof(int)) return null;
 
-        // Get the actual length of the incoming packet
-        int length = BitConverter.ToInt32(lengthPrefix, 0);
-        byte[] buffer = new byte[length]; // Create a buffer for the packet data
+            // Get the actual length of the incoming packet
+            int length = BitConverter.ToInt32(lengthPrefix, 0);
+            byte[] buffer = new byte[length]; // Create a buffer for the packet data
 
-        // Read the packet data
-        bytesRead = stream.Read(buffer, 0, length);
+            // Read the packet data
+            bytesRead = stream.Read(buffer, 0, length);
 
-        // If the packet data is not fully read, return null
-        if (bytesRead < length) return null;
+            // If the packet data is not fully read, return null
+            if (bytesRead < length) return null;
 
-        return buffer; // Return the received packet data
+            return buffer; // Return the received packet data
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"SecureTransport: Error receiving packet: {e.Message}");
+            return null;
+        }
     }
 
     /// <summary>
@@ -249,23 +277,31 @@ public class SecureTransportClient : ISecureTransportConnection, IAsyncSecureTra
     /// <returns>The received packet data, or null if the receive operation failed.</returns>
     internal async Task<byte[]?> ReceivePacketAsync(NetworkStream stream)
     {
-        byte[] lengthPrefix = new byte[sizeof(int)];
-        int bytesRead = await stream.ReadAsync(lengthPrefix, 0, sizeof(int));
+        try
+        {
+            byte[] lengthPrefix = new byte[sizeof(int)];
+            int bytesRead = await stream.ReadAsync(lengthPrefix, 0, sizeof(int));
 
-        // If the length prefix is not fully read, return null
-        if (bytesRead < sizeof(int)) return null;
+            // If the length prefix is not fully read, return null
+            if (bytesRead < sizeof(int)) return null;
 
-        // Get the actual length of the incoming packet
-        int length = BitConverter.ToInt32(lengthPrefix, 0);
-        byte[] buffer = new byte[length]; // Create a buffer for the packet data
+            // Get the actual length of the incoming packet
+            int length = BitConverter.ToInt32(lengthPrefix, 0);
+            byte[] buffer = new byte[length]; // Create a buffer for the packet data
 
-        // Read the packet data
-        bytesRead = await stream.ReadAsync(buffer, 0, length);
+            // Read the packet data
+            bytesRead = await stream.ReadAsync(buffer, 0, length);
 
-        // If the packet data is not fully read, return null
-        if (bytesRead < length) return null;
+            // If the packet data is not fully read, return null
+            if (bytesRead < length) return null;
 
-        return buffer;
+            return buffer;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"SecureTransport: Error receiving packet: {e.Message}");
+            return null;
+        }
     }
 
     /// <summary>

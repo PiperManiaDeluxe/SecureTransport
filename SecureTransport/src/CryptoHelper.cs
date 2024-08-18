@@ -21,7 +21,7 @@ internal static class CryptoHelper
     /// <summary>
     /// The number of iterations used in key derivation.
     /// </summary>
-    public const int EncryptionIterations = 10_000;
+    public const int EncryptionIterations = 100_000; // Increased from 10,000 to 100,000 for security
 
     /// <summary>
     /// Encrypts the given data using AES encryption with the provided key.
@@ -31,15 +31,15 @@ internal static class CryptoHelper
     /// <returns>The encrypted data, including the IV.</returns>
     public static byte[] Encrypt(byte[] data, byte[] key)
     {
-        using var aes = Aes.Create(); // Create a new AES instance
+        using Aes aes = Aes.Create(); // Create a new AES instance
         aes.Key = key; // Set the encryption key
         aes.GenerateIV(); // Generate a new IV
 
-        using var ms = new MemoryStream(); // Memory stream to hold encrypted data
+        using MemoryStream ms = new MemoryStream(); // Memory stream to hold encrypted data
         ms.Write(aes.IV, 0, aes.IV.Length); // Write the IV to the stream
 
         // Create a CryptoStream for encryption
-        using (var cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
+        using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
         {
             cs.Write(data, 0, data.Length); // Write the data to encrypt
             cs.FlushFinalBlock(); // Ensure all data is flushed to the stream
@@ -56,7 +56,7 @@ internal static class CryptoHelper
     /// <returns>The decrypted data.</returns>
     public static byte[] Decrypt(byte[] encryptedData, byte[] key)
     {
-        using var aes = Aes.Create(); // Create a new AES instance
+        using Aes aes = Aes.Create(); // Create a new AES instance
         aes.Key = key; // Set the decryption key
 
         // Extract the IV from the encrypted data
@@ -64,10 +64,10 @@ internal static class CryptoHelper
         Array.Copy(encryptedData, 0, iv, 0, iv.Length);
         aes.IV = iv; // Set the IV for decryption
 
-        using var ms = new MemoryStream(); // Memory stream to hold decrypted data
+        using MemoryStream ms = new MemoryStream(); // Memory stream to hold decrypted data
 
         // Create a CryptoStream for decryption
-        using (var cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
+        using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
         {
             cs.Write(encryptedData, iv.Length,
                 encryptedData.Length - iv.Length); // Write the encrypted data (excluding IV)
@@ -86,7 +86,8 @@ internal static class CryptoHelper
     public static byte[] DeriveKey(string passphrase, byte[] salt)
     {
         // Use PBKDF2 to derive a key from the passphrase and salt
-        using var pbkdf2 = new Rfc2898DeriveBytes(passphrase, salt, EncryptionIterations, HashAlgorithmName.SHA512);
+        using Rfc2898DeriveBytes pbkdf2 =
+            new Rfc2898DeriveBytes(passphrase, salt, EncryptionIterations, HashAlgorithmName.SHA512);
         return pbkdf2.GetBytes(KeySizeBytes); // Return the derived key
     }
 
@@ -99,7 +100,7 @@ internal static class CryptoHelper
     public static byte[] ComputeHmac(byte[] data, string key)
     {
         // Create HMACSHA512 instance with the provided key
-        using var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(key));
+        using HMACSHA512 hmac = new HMACSHA512(Encoding.UTF8.GetBytes(key));
         return hmac.ComputeHash(data); // Return the computed HMAC
     }
 }
