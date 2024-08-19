@@ -211,7 +211,6 @@ public class SecureConnection : ISecureTransportConnection
     /// <summary>
     /// Closes the connection and releases all resources.
     /// </summary>
-    [Obsolete("Use Disconnect();")]
     public void Disconnect()
     {
         // Close the stream and client connection
