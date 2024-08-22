@@ -3,14 +3,14 @@ using SecureTransport;
 
 namespace ExampleClient;
 
-class ProgramConfig
+internal class ProgramConfig
 {
     public static string Passphrase { get; set; } = "generic";
     public static string Address { get; set; } = "127.0.0.1";
     public static int Port { get; set; } = 8085;
 }
 
-class ClientWrapper
+internal class ClientWrapper
 {
     public bool LoopRunning;
 
@@ -36,10 +36,7 @@ class ClientWrapper
                 if (sMessage == null)
                     continue;
 
-                if (sMessage == "quit")
-                {
-                    LoopRunning = false;
-                }
+                if (sMessage == "quit") LoopRunning = false;
 
                 _client.SendEncryptedPacket(Encoding.UTF8.GetBytes(sMessage));
 
@@ -53,24 +50,26 @@ class ClientWrapper
     }
 
     public bool IsAuthed => _client.IsAuthed;
+
+    public void Close()
+    {
+        _client.Disconnect();
+    }
 }
 
-class Program
+internal class Program
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
-        if (args.Length >= 1)
-        {
-            ProgramConfig.Passphrase = args[0];
-        }
+        if (args.Length >= 1) ProgramConfig.Passphrase = args[0];
 
         ClientWrapper client = new ClientWrapper();
 
         client.Loop();
 
-        while (client.LoopRunning)
-        {
-            Thread.Sleep(100);
-        }
+        Console.WriteLine("Press Enter to exit.");
+        Console.ReadLine();
+
+        client.Close();
     }
 }
