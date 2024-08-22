@@ -49,22 +49,6 @@ public class SecureTransportServer
     }
 
     /// <summary>
-    /// Accepts an incoming client connection and returns a SecureConnection object.
-    /// </summary>
-    /// <returns>A SecureConnection object representing the accepted client connection.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the server has not been started.</exception>
-    [Obsolete("Instead create a new SecureConnection(this); Then use SecureConnection.Open();")]
-    public SecureConnection AcceptClient()
-    {
-        // Check if the listener has been initialized
-        if (_listener == null)
-            throw new InvalidOperationException("TCP listener is null, server has not yet started.");
-
-        // Accept the incoming client connection and return a SecureConnection object
-        return new SecureConnection(_listener.AcceptTcpClient(), this);
-    }
-
-    /// <summary>
     /// Closes the server and stops listening for incoming connections.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown if the server has not been started.</exception>

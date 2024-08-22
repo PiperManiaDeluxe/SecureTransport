@@ -33,70 +33,11 @@ public class SecureConnection : ISecureTransportConnection
     /// <summary>
     /// Initializes a new instance of the SecureConnection class.
     /// </summary>
-    /// <param name="client">The TCP client for this connection.</param>
-    /// <param name="server">The SecureTransportServer that owns this connection.</param>
-    [Obsolete("Use SecureConnection(SecureTransportServer server) and Open(); instead")]
-    internal SecureConnection(TcpClient client, SecureTransportServer server)
-    {
-        // Ensure the provided client and server are not null
-        Client = client ?? throw new ArgumentNullException(nameof(client));
-        Owner = server ?? throw new ArgumentNullException(nameof(server));
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the SecureConnection class.
-    /// </summary>
     /// <param name="server">The SecureTransportServer that owns this connection.</param>
     public SecureConnection(SecureTransportServer server)
     {
         // Ensure the provided client and server are not null
         Owner = server ?? throw new ArgumentNullException(nameof(server));
-    }
-
-    /// <summary>
-    /// Authenticates the connection using a challenge-response mechanism.
-    /// </summary>
-    /// <returns>True if authentication is successful, false otherwise.</returns>
-    [Obsolete("Use Open();")]
-    public bool AuthSelf()
-    {
-        // If already authenticated, return true
-        if (IsAuthed)
-            return true;
-
-        // Get the network stream for communication
-        Stream = Client!.GetStream();
-
-        // Generate a challenge and send it to the client
-        Challenge = RandomNumberGenerator.GetBytes(HMACSHA512.HashSizeInBytes);
-        Stream.Write(Challenge, 0, Challenge.Length);
-
-        // Read the response from the client
-        byte[] response = new byte[HMACSHA512.HashSizeInBytes];
-        int bytesRead = Stream.Read(response, 0, response.Length);
-
-        // Check if the response is of the expected length
-        if (bytesRead != response.Length)
-            return false;
-
-        // Verify the response using the expected HMAC
-        byte[] expectedResponse = CryptoHelper.ComputeHmac(Challenge, Owner.Passphrase);
-        if (StructuralComparisons.StructuralEqualityComparer.Equals(response, expectedResponse))
-        {
-            // Authentication successful, derive the encryption key
-            EncryptionKey = CryptoHelper.DeriveKey(Owner.Passphrase, Challenge);
-
-            // Send an encrypted success message to the client
-            byte[] successMessage = Encoding.UTF8.GetBytes("You are authed!");
-            byte[] encryptedMessage = CryptoHelper.Encrypt(successMessage, EncryptionKey);
-            SendPacket(Stream, encryptedMessage);
-
-            IsAuthed = true; // Mark the connection as authenticated
-            return true;
-        }
-
-        // Authentication failed
-        return false;
     }
 
     public void Open()
@@ -189,23 +130,6 @@ public class SecureConnection : ISecureTransportConnection
 
         // Authentication failed
         IsAuthed = false;
-    }
-
-    /// <summary>
-    /// Closes the connection and releases all resources.
-    /// </summary>
-    [Obsolete("Use Disconnect();")]
-    public void Close()
-    {
-        // Close the stream and client connection
-        Stream?.Close();
-        Client?.Close();
-
-        // Reset authentication and related properties
-        IsAuthed = false;
-        Stream = null;
-        EncryptionKey = null;
-        Challenge = null;
     }
 
     /// <summary>
