@@ -289,6 +289,9 @@ public class SecureTransportClient : ISecureTransportConnection, IAsyncSecureTra
             if (!IsAuthed)
                 throw new InvalidOperationException("Client is not yet authenticated.");
 
+            if (Stream == null)
+                throw new InvalidOperationException("Stream is not initialized.");
+
             // Encrypt the packet data
             byte[] encryptedPacket = CryptoHelper.Encrypt(data, _encryptionKey!);
             SendPacket(Stream!, encryptedPacket); // Send the encrypted packet
@@ -311,6 +314,9 @@ public class SecureTransportClient : ISecureTransportConnection, IAsyncSecureTra
             // Ensure the client is authenticated before sending data
             if (!IsAuthed)
                 throw new InvalidOperationException("Client is not yet authenticated.");
+
+            if (Stream == null)
+                throw new InvalidOperationException("Stream is not initialized.");
 
             // Encrypt the packet data
             byte[] encryptedPacket = CryptoHelper.Encrypt(data, _encryptionKey!);
@@ -360,6 +366,9 @@ public class SecureTransportClient : ISecureTransportConnection, IAsyncSecureTra
             // Ensure the client is authenticated before receiving data
             if (!IsAuthed)
                 throw new InvalidOperationException("Client is not yet authenticated.");
+
+            if (Stream == null)
+                throw new InvalidOperationException("Stream is not initialized.");
 
             // Receive the encrypted packet data
             byte[] data = await ReceivePacketAsync(Stream!) ??
@@ -492,11 +501,19 @@ public class SecureTransportClient : ISecureTransportConnection, IAsyncSecureTra
     /// </summary>
     public void Disconnect()
     {
-        Stream?.Close();
-        _client?.Close();
-        IsAuthed = false;
-        Stream = null;
-        _client = null;
-        _encryptionKey = null;
+        try
+        {
+            Stream?.Close();
+            _client?.Close();
+            IsAuthed = false;
+            Stream = null;
+            _client = null;
+            _encryptionKey = null;
+        }
+        catch (Exception e)
+        {
+            OnErrorOccurred($"SecureTransport: Error disconnecting: {e.Message}");
+            throw;
+        }
     }
 }
