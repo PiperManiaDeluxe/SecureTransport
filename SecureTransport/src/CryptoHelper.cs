@@ -9,14 +9,14 @@ namespace SecureTransport;
 internal static class CryptoHelper
 {
     /// <summary>
-    /// The size of the encryption key in bytes (256 bits).
+    /// The size of the encryption key in bytes.
     /// </summary>
-    public const int KeySizeBytes = 32;
+    public const int KeySizeBytes = 128;
 
     /// <summary>
-    /// The size of the initialization vector (IV) in bytes (128 bits).
+    /// The size of the initialization vector (IV) in bytes.
     /// </summary>
-    public const int IvSizeBytes = 16;
+    public const int IvSizeBytes = 64;
 
     /// <summary>
     /// The number of iterations used in key derivation.
@@ -33,6 +33,8 @@ internal static class CryptoHelper
     {
         using Aes aes = Aes.Create(); // Create a new AES instance
         aes.Key = key; // Set the encryption key
+        aes.KeySize = KeySizeBytes / 8;
+        aes.BlockSize = IvSizeBytes / 8;
         aes.GenerateIV(); // Generate a new IV
 
         using MemoryStream ms = new MemoryStream(); // Memory stream to hold encrypted data
